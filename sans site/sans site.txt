@@ -1,0 +1,517 @@
+[2026-03-19T22:21:49.425Z]
+Entreprise: BANDAI NAMCO ENTERTAINMENT EUROPE
+SIREN: 987675576
+SIRET: 98767557600019
+NAF: 
+Ville: Lyon
+Departement: 69
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Sources: infonet
+Lead key: OTg3Njc1NTc2MDAwMTk
+----------------------------------------
+[2026-03-20T07:14:07.183Z]
+Entreprise: AH2J
+SIREN: 824777635
+SIRET: 82477763500015
+NAF: AH2J
+Ville: Lille
+Departement: 59
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: ODI0Nzc3NjM1MDAwMTU
+----------------------------------------
+
+[2026-03-20T07:14:07.183Z]
+Entreprise: DA REPAIR PHONE
+SIREN: 990069015
+SIRET: 99006901500016
+NAF: 
+Ville: Lille
+Departement: 59
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: OTkwMDY5MDE1MDAwMTY
+----------------------------------------
+
+[2026-03-20T07:14:07.183Z]
+Entreprise: SEBRI BILAL
+SIREN: 897532834
+SIRET: 89753283400032
+NAF: 
+Ville: Lille
+Departement: 59
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: ODk3NTMyODM0MDAwMzI
+----------------------------------------
+
+[2026-03-20T07:14:07.183Z]
+Entreprise: KHELIFI ZAKARIA
+SIREN: 940098106
+SIRET: 94009810600013
+NAF: 
+Ville: Lille
+Departement: 59
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: OTQwMDk4MTA2MDAwMTM
+----------------------------------------
+
+[2026-03-20T07:14:07.183Z]
+Entreprise: MAGHRAOUI MOHAMED
+SIREN: 815301619
+SIRET: 81530161900020
+NAF: 
+Ville: Lille
+Departement: 59
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: ODE1MzAxNjE5MDAwMjA
+----------------------------------------
+
+[2026-03-20T07:14:07.183Z]
+Entreprise: SHAMS SHAMSUDDIN
+SIREN: 891642498
+SIRET: 89164249800044
+NAF: 
+Ville: Lille
+Departement: 59
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: ODkxNjQyNDk4MDAwNDQ
+----------------------------------------
+
+[2026-03-20T07:14:07.183Z]
+Entreprise: BOUBACIR NOUREDDINE
+SIREN: 504850801
+SIRET: 50485080100011
+NAF: 
+Ville: Lille
+Departement: 59
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: NTA0ODUwODAxMDAwMTE
+----------------------------------------
+[2026-03-20T09:30:07.099Z]
+Entreprise: M.S.F (M.S.F)
+SIREN: 811683317
+SIRET: 81168331700028
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: ODExNjgzMzE3MDAwMjg
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: ROTEL ELEC
+SIREN: 828497412
+SIRET: 82849741200027
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: ODI4NDk3NDEyMDAwMjc
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: COGAN DAVID
+SIREN: 519227052
+SIRET: 51922705200023
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: NTE5MjI3MDUyMDAwMjM
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: MARGUERITTE AUGUSTIN
+SIREN: 935029728
+SIRET: 93502972800018
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: OTM1MDI5NzI4MDAwMTg
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: RAMDANI KASSIM
+SIREN: 802492579
+SIRET: 80249257900015
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: ODAyNDkyNTc5MDAwMTU
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: BOURDIM RABAH
+SIREN: 753415652
+SIRET: 75341565200019
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: NzUzNDE1NjUyMDAwMTk
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: MOLLIDOR REMY
+SIREN: 809489545
+SIRET: 80948954500024
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: ODA5NDg5NTQ1MDAwMjQ
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: GAILLARD JULIEN
+SIREN: 532140472
+SIRET: 53214047200012
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: NTMyMTQwNDcyMDAwMTI
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: CATTELET LOIC
+SIREN: 538589508
+SIRET: 53858950800018
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: NTM4NTg5NTA4MDAwMTg
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: WARDAVOIR JULIEN
+SIREN: 753322429
+SIRET: 75332242900014
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: NzUzMzIyNDI5MDAwMTQ
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: WOROPAJ-DOUALAS SEBASTIEN
+SIREN: 529465551
+SIRET: 52946555100016
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: NTI5NDY1NTUxMDAwMTY
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: PREVAL SEBASTIEN
+SIREN: 520797812
+SIRET: 52079781200010
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: NTIwNzk3ODEyMDAwMTA
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: TOBIAS GODFROID
+SIREN: 479785990
+SIRET: 47978599000025
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: NDc5Nzg1OTkwMDAwMjU
+----------------------------------------
+
+[2026-03-20T09:30:07.099Z]
+Entreprise: GOISLARD HENRI
+SIREN: 431588334
+SIRET: 43158833400018
+NAF: 
+Ville: 
+Departement: 62
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: NDMxNTg4MzM0MDAwMTg
+----------------------------------------
+[2026-03-20T11:13:15.485Z]
+Entreprise: DEROUICHE ABDESSAMIE
+SIREN: 882575913
+SIRET: 88257591300018
+NAF: 
+Ville: 
+Departement: 59
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: ODgyNTc1OTEzMDAwMTg
+----------------------------------------
+
+[2026-03-20T11:13:15.485Z]
+Entreprise: GOUVEIA DOS SANTOS FABRICE
+SIREN: 848794517
+SIRET: 84879451700013
+NAF: 
+Ville: 
+Departement: 59
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: ODQ4Nzk0NTE3MDAwMTM
+----------------------------------------
+
+[2026-03-20T11:13:15.485Z]
+Entreprise: GLINEUR BENOIT
+SIREN: 892165085
+SIRET: 89216508500028
+NAF: 
+Ville: 
+Departement: 59
+Code postal: 
+Adresse: 
+Telephone: 
+Email: 
+Site web: 
+Statut site: no_website
+Detail site: 
+Source validation: 
+Statut validation INPI: 
+Domaines INPI: 
+Sources: infonet
+Lead key: ODkyMTY1MDg1MDAwMjg
+----------------------------------------

@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InfoPro - Prospection Entreprises</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  </head>
+  <body>
+    <main class="layout">
+      <header>
+        <h1>InfoPro</h1>
+        <p>Recherche entreprises multi-sources avec priorite sur la detection de presence ou absence de site web.</p>
+      </header>
+
+      <section class="panel">
+        <form id="search-form">
+          <div class="grid two">
+            <label>
+              Recherche
+              <input id="query" type="text" placeholder="Nom, SIREN, SIRET..." />
+            </label>
+            <label>
+              Sources (csv)
+              <input id="providers" type="text" placeholder="infonet, annuaire" />
+            </label>
+          </div>
+
+          <div class="grid two">
+            <label>
+              Codes APE / NAF (csv)
+              <input id="apeCodes" type="text" placeholder="6202A, 7022Z" />
+            </label>
+            <label>
+              Statut site web
+              <select id="websiteStatus">
+                <option value="any">Indifferent</option>
+                <option value="no_website">Sans site web</option>
+                <option value="has_website">Avec site web</option>
+                <option value="unknown">Inconnu</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="grid three">
+            <label>
+              Tags (csv)
+              <input id="tags" type="text" placeholder="digital, conseil" />
+            </label>
+            <label>
+              Villes (csv)
+              <input id="cities" type="text" placeholder="Paris, Lyon" />
+            </label>
+            <label>
+              Codes postaux (csv)
+              <input id="postalCodes" type="text" placeholder="75001, 69002" />
+            </label>
+          </div>
+
+          <div class="grid three">
+            <label>
+              Departements (csv)
+              <input id="departments" type="text" placeholder="75, 69" />
+            </label>
+            <label>
+              Formes juridiques (csv)
+              <input id="legalForms" type="text" placeholder="SAS, SARL" />
+            </label>
+            <label>
+              Statuts (csv)
+              <input id="statuses" type="text" placeholder="A, C" />
+            </label>
+          </div>
+
+          <div class="grid four">
+            <label>
+              Staff
+              <input id="staff" type="text" placeholder="10-19" />
+            </label>
+            <label>
+              CA min
+              <input id="minSales" type="number" min="0" placeholder="100000" />
+            </label>
+            <label>
+              CA max
+              <input id="maxSales" type="number" min="0" placeholder="5000000" />
+            </label>
+            <label>
+              Risk score
+              <input id="riskNonPaymentsNormalized" type="text" placeholder="1..5" />
+            </label>
+          </div>
+
+          <div class="grid four">
+            <label>
+              Tri
+              <select id="sortBy">
+                <option value="sales">Chiffre d'affaires</option>
+                <option value="netIncome">Resultat net</option>
+                <option value="creationDate">Date creation</option>
+                <option value="name">Nom</option>
+                <option value="supplierPaymentDelay">Delai paiement fournisseur</option>
+              </select>
+            </label>
+            <label>
+              Ordre
+              <select id="sortOrder">
+                <option value="desc">Decroissant</option>
+                <option value="asc">Croissant</option>
+              </select>
+            </label>
+            <label>
+              Taille page
+              <input id="pageSize" type="number" min="1" max="100" value="25" />
+            </label>
+            <label>
+              Nb pages a scraper
+              <input id="maxPages" type="number" min="1" max="20" value="3" />
+            </label>
+          </div>
+
+          <div class="checks">
+            <label><input id="isActive" type="checkbox" checked /> Societe active</label>
+            <label><input id="isProfitable" type="checkbox" /> Societe rentable</label>
+            <label><input id="hasEmail" type="checkbox" /> Email</label>
+            <label><input id="hasLinkedin" type="checkbox" /> Linkedin</label>
+            <label><input id="hasPhoneNumber" type="checkbox" /> Telephone</label>
+            <label><input id="hasTwitter" type="checkbox" /> Twitter</label>
+            <label><input id="isRespectfulOfPaymentDelays" type="checkbox" /> Respect delais paiement</label>
+            <label><input id="includeContactEnrichment" type="checkbox" /> Enrichir contacts Infonet</label>
+          </div>
+
+          <details class="advanced-filters">
+            <summary>Filtres avances</summary>
+            <div class="grid four">
+              <label>
+                Resultat net min
+                <input id="minNetIncome" type="number" placeholder="0" />
+              </label>
+              <label>
+                Resultat net max
+                <input id="maxNetIncome" type="number" placeholder="0" />
+              </label>
+              <label>
+                Date creation (depuis)
+                <input id="fromCreationDate" type="text" placeholder="YYYY-MM-DD" />
+              </label>
+              <label>
+                Date creation (jusqu a)
+                <input id="toCreationDate" type="text" placeholder="YYYY-MM-DD" />
+              </label>
+            </div>
+            <div class="grid two">
+              <label>
+                Secteurs (csv)
+                <input id="sectorCodes" type="text" placeholder="A, B" />
+              </label>
+            </div>
+          </details>
+
+          <button type="submit" id="submit-search">Lancer la recherche</button>
+
+          <div class="presets">
+            <h3>Presets</h3>
+            <div class="preset-save">
+              <input type="text" id="preset-name" placeholder="Nom du preset" />
+              <button type="button" id="save-preset">Sauvegarder les filtres</button>
+            </div>
+            <div class="preset-load">
+              <select id="preset-select">
+                <option value="">-- Charger un preset --</option>
+              </select>
+              <button type="button" id="load-preset">Charger</button>
+            </div>
+          </div>
+
+          <div class="history" id="history-section">
+            <h3>Dernieres recherches</h3>
+            <ul id="history-list"></ul>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div id="status" role="status" aria-live="polite" aria-atomic="true">Pret.</div>
+        <div id="meta"></div>
+        <div class="actions" id="export-actions">
+          <button type="button" id="export-csv" class="btn-secondary" disabled>Exporter CSV</button>
+          <button type="button" id="export-txt" class="btn-secondary" disabled>Exporter TXT</button>
+          <button type="button" id="export-xlsx" class="btn-secondary" disabled>Exporter XLSX</button>
+        </div>
+        <div id="results"></div>
+      </section>
+
+      <section class="panel">
+        <div class="lead-layout">
+          <div>
+            <div class="panel-head">
+              <h2>Leads sans site</h2>
+              <button type="button" id="refresh-leads" class="btn-secondary">Rafraichir</button>
+            </div>
+            <div id="lead-store-info"></div>
+            <div id="lead-list"></div>
+          </div>
+
+          <div>
+            <div class="panel-head">
+              <h2>Fiche lead</h2>
+            </div>
+            <form id="lead-form" class="lead-form">
+              <input id="leadKey" type="hidden" />
+
+              <div class="grid two">
+                <label>
+                  Entreprise
+                  <input id="leadCompany" type="text" />
+                </label>
+                <label>
+                  Statut
+                  <select id="leadStatus">
+                    <option value="new">Nouveau</option>
+                    <option value="to_contact">A contacter</option>
+                    <option value="contacted">Contacte</option>
+                    <option value="qualified">Qualifie</option>
+                    <option value="archived">Archive</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="grid two">
+                <label>
+                  SIREN
+                  <input id="leadSiren" type="text" />
+                </label>
+                <label>
+                  Relance
+                  <input id="leadFollowUpAt" type="datetime-local" />
+                </label>
+              </div>
+
+              <div class="grid two">
+                <label>
+                  Telephone
+                  <input id="leadPhone" type="text" />
+                </label>
+                <label>
+                  Email
+                  <input id="leadEmail" type="text" />
+                </label>
+              </div>
+
+              <div class="grid two">
+                <label>
+                  Site web
+                  <input id="leadWebsite" type="text" />
+                </label>
+                <label>
+                  Ville
+                  <input id="leadCity" type="text" />
+                </label>
+              </div>
+
+              <label>
+                Notes
+                <textarea id="leadNotes" rows="8" placeholder="Notes de qualification, script d'appel, infos commerciales..."></textarea>
+              </label>
+
+              <button type="submit" id="save-lead">Enregistrer la fiche</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
