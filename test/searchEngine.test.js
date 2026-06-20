@@ -36,6 +36,17 @@ async function run() {
   assert(r2.items.every((item) => item.websiteStatus === 'has_website'), 'all items should have website');
   assert(r2.providerResults[0].provider === 'infonet', 'provider result should expose infonet');
 
+  let invalidProviderRejected = false;
+  try {
+    await engine.searchCompanies({
+      providers: ['unknown-provider'],
+      pageSize: 25
+    });
+  } catch (error) {
+    invalidProviderRejected = error.message.includes('Invalid provider');
+  }
+  assert(invalidProviderRejected, 'unknown providers should be rejected');
+
   await engine.dispose();
 
   const engineWithInpi = createSearchEngine({

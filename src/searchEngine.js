@@ -3,10 +3,15 @@
 const { createInfonetClient } = require('./infonetClient');
 const { InpiValidator } = require('./inpiValidator');
 const { AnnuaireProvider } = require('./providers/annuaireProvider');
+const { ArtisanProvider } = require('./providers/artisanProvider');
 const {
+  applyCompanyFilters,
   mergeCompanyRecords,
+  sortCompanyRecords,
   paginateItems
 } = require('./utils/searchModel');
+
+const AVAILABLE_PROVIDERS = ['infonet', 'annuaire', 'artisan'];
 
 class SearchEngine {
   constructor(options = {}) {
@@ -14,6 +19,10 @@ class SearchEngine {
     this.annuaireProvider = options.annuaireProvider || new AnnuaireProvider({
       baseUrl: process.env.ANNUAIRE_BASE_URL,
       timeoutMs: process.env.ANNUAIRE_TIMEOUT_MS
+    });
+    this.artisanProvider = options.artisanProvider || new ArtisanProvider({
+      baseUrl: process.env.ARTISAN_BASE_URL,
+      timeoutMs: process.env.ARTISAN_TIMEOUT_MS
     });
     this.inpiValidator = options.inpiValidator || new InpiValidator();
     this.defaultProviders = this._parseProviders(
@@ -36,10 +45,18 @@ class SearchEngine {
     );
   }
 
-  _resolveProviders(filters) {
+  resolveProviders(filters = {}) {
     const requested = this._parseProviders(filters.providers || []);
     const names = requested.length > 0 ? requested : this.defaultProviders;
-    return names.filter((name) => name === 'infonet' || name === 'annuaire');
+    const invalid = names.filter((name) => !AVAILABLE_PROVIDERS.includes(name));
+    if (invalid.length > 0) {
+      throw new Error(`Invalid provider(s): ${invalid.join(', ')}.`);
+    }
+    return names;
+  }
+
+  _resolveProviders(filters) {
+    return this.resolveProviders(filters);
   }
 
   async _searchInfonet(filters) {
@@ -61,8 +78,12 @@ class SearchEngine {
     return this.annuaireProvider.search(filters);
   }
 
+  async _searchArtisan(filters) {
+    return this.artisanProvider.search(filters);
+  }
+
   async searchCompanies(filters) {
-    const providerNames = this._resolveProviders(filters);
+    const providerNames = this.resolveProviders(filters);
     const providerResults = [];
     const warnings = [];
     const mergedItems = [];
@@ -78,7 +99,9 @@ class SearchEngine {
         const providerResult =
           providerName === 'annuaire'
             ? await this._searchAnnuaire(providerFilters)
-            : await this._searchInfonet(providerFilters);
+            : providerName === 'artisan'
+              ? await this._searchArtisan(providerFilters)
+              : await this._searchInfonet(providerFilters);
 
         providerResults.push(providerResult.meta || { provider: providerName });
         warnings.push(...(providerResult.warnings || []));
@@ -89,10 +112,15 @@ class SearchEngine {
     }
 
     const merged = mergeCompanyRecords(mergedItems);
+    const filtered = applyCompanyFilters(merged, {
+      ...filters,
+      websiteStatus: 'any',
+      hasWebsite: ''
+    });
     const validationResult = this.inpiValidator
-      ? await this.inpiValidator.validateNoWebsiteCandidates(merged, filters)
-      : { items: merged, warnings: [], meta: null };
-    const finalItems = validationResult.items || merged;
+      ? await this.inpiValidator.validateNoWebsiteCandidates(filtered, filters)
+      : { items: filtered, warnings: [], meta: null };
+    const finalItems = sortCompanyRecords(validationResult.items || filtered, filters);
 
     warnings.push(...(validationResult.warnings || []));
     if (validationResult.meta) {
@@ -122,6 +150,7 @@ function createSearchEngine(options) {
 }
 
 module.exports = {
+  AVAILABLE_PROVIDERS,
   SearchEngine,
   createSearchEngine
 };

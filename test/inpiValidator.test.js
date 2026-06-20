@@ -92,6 +92,16 @@ async function run() {
   assert(noWebsiteOnly.items.length === 1, 'no_website filter should keep only confirmed no-domain rows');
   assert(noWebsiteOnly.items[0].siren === '222222222', 'remaining no_website row should be the INPI-confirmed one');
 
+  const unconfigured = new InpiValidator({
+    client: {
+      isConfigured: false
+    }
+  });
+  const unconfiguredResult = await unconfigured.validateNoWebsiteCandidates(baseItems, { websiteStatus: 'no_website' });
+  assert(unconfiguredResult.items.length === 3, 'unconfigured INPI should keep probable no-website results visible');
+  assert(unconfiguredResult.items.every((item) => item.shouldPersistNoWebsite === false), 'unconfigured INPI should block automatic persistence');
+  assert(unconfiguredResult.items.every((item) => item.inpiValidationStatus === 'not_configured'), 'unconfigured INPI should mark validation status');
+
   console.log('inpiValidator.test.js: all passed');
 }
 

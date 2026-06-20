@@ -32,6 +32,17 @@ function normalizeStringLower(value) {
   return normalizeString(value).toLowerCase();
 }
 
+function normalizeSearchText(value) {
+  return normalizeString(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function normalizeNafCode(value) {
+  return normalizeString(value).replace(/[^0-9A-Z]/gi, '').toUpperCase();
+}
+
 function normalizeWebsiteStatus(value) {
   const raw = normalizeStringLower(value);
   if (!raw || raw === 'any' || raw === 'all') {
@@ -75,6 +86,10 @@ function normalizeOptionalBoolean(value) {
   }
 
   return undefined;
+}
+
+function normalizeObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? { ...value } : {};
 }
 
 function canonicalCompanyName(value) {
@@ -127,6 +142,7 @@ function normalizeCompanyRecord(item, providerName) {
     id: normalizeString(item.id),
     company,
     name: company,
+    sourceId: normalizeString(item.sourceId),
     siren: normalizeString(item.siren),
     siret: normalizeString(item.siret),
     nafCode: normalizeString(item.nafCode || item.apeCode),
@@ -137,7 +153,12 @@ function normalizeCompanyRecord(item, providerName) {
     address: normalizeString(item.address),
     legalForm: normalizeString(item.legalForm),
     status: normalizeString(item.status),
+    creationDate: normalizeString(item.creationDate),
+    activityLabel: normalizeString(item.activityLabel),
+    metiers: uniqueStrings(item.metiers || []),
     phone: normalizeString(item.phone),
+    phoneStatus: normalizeString(item.phoneStatus),
+    phoneSource: normalizeString(item.phoneSource),
     email: normalizeString(item.email),
     website: normalizeString(item.website),
     websiteStatus: inferWebsiteStatus(item),
@@ -150,6 +171,7 @@ function normalizeCompanyRecord(item, providerName) {
     href: normalizeString(item.href),
     rawCells: Array.isArray(item.rawCells) ? item.rawCells.slice() : [],
     warnings: Array.isArray(item.warnings) ? uniqueStrings(item.warnings) : [],
+    providerData: normalizeObject(item.providerData),
     sources
   };
 }
@@ -178,6 +200,7 @@ function mergeCompanyRecords(items) {
       ...existing,
       company: existing.company || normalized.company,
       name: existing.name || normalized.name,
+      sourceId: existing.sourceId || normalized.sourceId,
       siren: existing.siren || normalized.siren,
       siret: existing.siret || normalized.siret,
       nafCode: existing.nafCode || normalized.nafCode,
@@ -187,7 +210,12 @@ function mergeCompanyRecords(items) {
       address: existing.address || normalized.address,
       legalForm: existing.legalForm || normalized.legalForm,
       status: existing.status || normalized.status,
+      creationDate: existing.creationDate || normalized.creationDate,
+      activityLabel: existing.activityLabel || normalized.activityLabel,
+      metiers: uniqueStrings([...(existing.metiers || []), ...(normalized.metiers || [])]),
       phone: existing.phone || normalized.phone,
+      phoneStatus: existing.phoneStatus === 'found' ? existing.phoneStatus : (normalized.phoneStatus || existing.phoneStatus),
+      phoneSource: existing.phoneSource || normalized.phoneSource,
       email: existing.email || normalized.email,
       website: existing.website || normalized.website,
       websiteStatusDetail: existing.websiteStatusDetail || normalized.websiteStatusDetail,
@@ -196,6 +224,10 @@ function mergeCompanyRecords(items) {
       tags: uniqueStrings([...(existing.tags || []), ...(normalized.tags || [])]),
       warnings: uniqueStrings([...(existing.warnings || []), ...(normalized.warnings || [])]),
       sources: uniqueStrings([...(existing.sources || []), ...(normalized.sources || [])]),
+      providerData: {
+        ...(existing.providerData || {}),
+        ...(normalized.providerData || {})
+      },
       confidence: confidenceWins ? normalized.confidence : existing.confidence,
       validationSource: normalized.validationSource || existing.validationSource,
       inpiValidationStatus: normalized.inpiValidationStatus || existing.inpiValidationStatus,
@@ -226,16 +258,68 @@ function mergeCompanyRecords(items) {
   return Array.from(merged.values());
 }
 
+function sortableValue(item, sortBy) {
+  const key = normalizeString(sortBy || '').toLowerCase();
+
+  if (key === 'name' || key === 'company') return normalizeStringLower(item.company || item.name);
+  if (key === 'city') return normalizeStringLower(item.city);
+  if (key === 'department') return normalizeString(item.department);
+  if (key === 'websitestatus') return normalizeStringLower(item.websiteStatus);
+  if (key === 'phonestatus') return normalizeStringLower(item.phoneStatus);
+  if (key === 'creationdate') return normalizeString(item.creationDate);
+
+  return '';
+}
+
+function sortCompanyRecords(items, filters = {}) {
+  const sortBy = normalizeString(filters.sortBy);
+  const normalizedSortBy = sortBy.toLowerCase();
+  if (!sortBy) {
+    return (items || []).slice();
+  }
+
+  const supported = new Set(['name', 'company', 'city', 'department', 'websitestatus', 'phonestatus', 'creationdate']);
+  if (!supported.has(normalizedSortBy)) {
+    return (items || []).slice();
+  }
+
+  const direction = normalizeStringLower(filters.sortOrder) === 'asc' ? 1 : -1;
+  return (items || []).slice().sort((left, right) => {
+    const leftValue = sortableValue(left, sortBy);
+    const rightValue = sortableValue(right, sortBy);
+    const comparison = leftValue.localeCompare(rightValue, 'fr', {
+      sensitivity: 'base',
+      numeric: true
+    });
+    if (comparison !== 0) return comparison * direction;
+    return normalizeStringLower(left.company).localeCompare(normalizeStringLower(right.company), 'fr');
+  });
+}
+
 function applyCompanyFilters(items, filters) {
-  const query = normalizeStringLower(filters.query);
-  const nafCodes = new Set([...(filters.nafCodes || []), ...(filters.apeCodes || [])].map(normalizeStringLower).filter(Boolean));
-  const tags = new Set((filters.tags || []).map(normalizeStringLower).filter(Boolean));
-  const cities = new Set((filters.cities || []).map(normalizeStringLower).filter(Boolean));
-  const departments = new Set((filters.departments || []).map(normalizeStringLower).filter(Boolean));
+  const query = normalizeSearchText(filters.query);
+  const nafCodes = new Set([...(filters.nafCodes || []), ...(filters.apeCodes || [])].map(normalizeNafCode).filter(Boolean));
+  const tags = new Set((filters.tags || []).map(normalizeSearchText).filter(Boolean));
+  const cities = new Set((filters.cities || []).map(normalizeSearchText).filter(Boolean));
+  const departments = new Set((filters.departments || []).map(normalizeSearchText).filter(Boolean));
   const postalCodes = (filters.postalCodes || []).map(normalizeString).filter(Boolean);
-  const legalForms = new Set((filters.legalForms || []).map(normalizeStringLower).filter(Boolean));
-  const statuses = new Set((filters.statuses || []).map(normalizeStringLower).filter(Boolean));
-  const websiteStatus = normalizeWebsiteStatus(filters.websiteStatus);
+  const legalForms = new Set((filters.legalForms || []).map(normalizeSearchText).filter(Boolean));
+  const statuses = new Set((filters.statuses || []).map(normalizeSearchText).filter(Boolean));
+  const websiteStatus = filters.hasWebsite
+    ? 'has_website'
+    : normalizeWebsiteStatus(filters.websiteStatus);
+  const fromCreationDate = normalizeString(filters.fromCreationDate);
+  const toCreationDate = normalizeString(filters.toCreationDate);
+  const needsInfonetData = [
+    filters.staff,
+    filters.minSales,
+    filters.maxSales,
+    filters.minNetIncome,
+    filters.maxNetIncome,
+    filters.riskNonPaymentsNormalized,
+    filters.isProfitable,
+    filters.isRespectfulOfPaymentDelays
+  ].some(Boolean);
 
   return (items || []).filter((item) => {
     if (query) {
@@ -246,19 +330,21 @@ function applyCompanyFilters(items, filters) {
         item.city,
         item.nafCode,
         item.website,
-        item.email
-      ].join(' ').toLowerCase();
+        item.email,
+        item.activityLabel,
+        ...(item.metiers || [])
+      ].map(normalizeSearchText).join(' ');
       if (!haystack.includes(query)) {
         return false;
       }
     }
 
-    if (nafCodes.size > 0 && !nafCodes.has(normalizeStringLower(item.nafCode))) {
+    if (nafCodes.size > 0 && !nafCodes.has(normalizeNafCode(item.nafCode))) {
       return false;
     }
 
     if (tags.size > 0) {
-      const rowTags = new Set((item.tags || []).map(normalizeStringLower).filter(Boolean));
+      const rowTags = new Set((item.tags || []).map(normalizeSearchText).filter(Boolean));
       for (const tag of tags) {
         if (!rowTags.has(tag)) {
           return false;
@@ -266,11 +352,11 @@ function applyCompanyFilters(items, filters) {
       }
     }
 
-    if (cities.size > 0 && !cities.has(normalizeStringLower(item.city))) {
+    if (cities.size > 0 && !cities.has(normalizeSearchText(item.city))) {
       return false;
     }
 
-    if (departments.size > 0 && !departments.has(normalizeStringLower(item.department))) {
+    if (departments.size > 0 && !departments.has(normalizeSearchText(item.department))) {
       return false;
     }
 
@@ -282,11 +368,50 @@ function applyCompanyFilters(items, filters) {
       }
     }
 
-    if (legalForms.size > 0 && !legalForms.has(normalizeStringLower(item.legalForm))) {
+    if (legalForms.size > 0 && !legalForms.has(normalizeSearchText(item.legalForm))) {
       return false;
     }
 
-    if (statuses.size > 0 && !statuses.has(normalizeStringLower(item.status))) {
+    if (statuses.size > 0 && !statuses.has(normalizeSearchText(item.status))) {
+      return false;
+    }
+
+    if (filters.isActive && item.status) {
+      const status = normalizeSearchText(item.status);
+      if (status !== 'a' && status !== 'active' && status !== 'actif') {
+        return false;
+      }
+    }
+
+    if (fromCreationDate && (!item.creationDate || item.creationDate < fromCreationDate)) {
+      return false;
+    }
+
+    if (toCreationDate && (!item.creationDate || item.creationDate > toCreationDate)) {
+      return false;
+    }
+
+    if (filters.hasEmail && !normalizeString(item.email)) {
+      return false;
+    }
+
+    if (filters.hasPhoneNumber && !normalizeString(item.phone)) {
+      return false;
+    }
+
+    if (filters.hasLinkedin || filters.hasTwitter) {
+      const socialLinks = item.providerData && Array.isArray(item.providerData.socialLinks)
+        ? item.providerData.socialLinks.map((link) => normalizeStringLower(link))
+        : [];
+      if (filters.hasLinkedin && !socialLinks.some((link) => link.includes('linkedin.'))) {
+        return false;
+      }
+      if (filters.hasTwitter && !socialLinks.some((link) => link.includes('twitter.') || link.includes('x.com'))) {
+        return false;
+      }
+    }
+
+    if (needsInfonetData && !(item.sources || []).includes('infonet')) {
       return false;
     }
 
@@ -322,6 +447,7 @@ module.exports = {
   normalizeCompanyRecord,
   mergeCompanyRecords,
   applyCompanyFilters,
+  sortCompanyRecords,
   paginateItems,
   companyKey,
   canonicalCompanyName

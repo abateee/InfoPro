@@ -21,10 +21,12 @@
               Recherche
               <input id="query" type="text" placeholder="Nom, SIREN, SIRET..." />
             </label>
-            <label>
-              Sources (csv)
-              <input id="providers" type="text" placeholder="infonet, annuaire" />
-            </label>
+            <fieldset class="source-switches">
+              <legend>Sources</legend>
+              <label><input id="providerInfonet" type="checkbox" value="infonet" checked /> Infonet</label>
+              <label><input id="providerAnnuaire" type="checkbox" value="annuaire" /> Annuaire</label>
+              <label><input id="providerArtisan" type="checkbox" value="artisan" /> Artisan en Ligne</label>
+            </fieldset>
           </div>
 
           <div class="grid two">
@@ -112,7 +114,7 @@
             </label>
             <label>
               Taille page
-              <input id="pageSize" type="number" min="1" max="100" value="25" />
+              <input id="pageSize" type="number" min="1" max="500" value="25" />
             </label>
             <label>
               Nb pages a scraper
@@ -130,6 +132,55 @@
             <label><input id="isRespectfulOfPaymentDelays" type="checkbox" /> Respect delais paiement</label>
             <label><input id="includeContactEnrichment" type="checkbox" /> Enrichir contacts Infonet</label>
           </div>
+
+          <section class="source-panel" id="artisan-panel">
+            <div class="panel-head compact">
+              <h2>Artisan en Ligne</h2>
+              <span id="artisan-options-status" class="muted">Options non chargees.</span>
+            </div>
+
+            <div class="grid three">
+              <label>
+                Metiers
+                <select id="artisanMetierIds" multiple size="6"></select>
+              </label>
+              <label>
+                Activites
+                <select id="artisanActivityIds" multiple size="6"></select>
+              </label>
+              <div class="grid">
+                <label>
+                  Departement
+                  <select id="artisanDepartment">
+                    <option value="">-- Departement --</option>
+                  </select>
+                </label>
+                <label>
+                  Ville exacte
+                  <select id="artisanCityIds" multiple size="4" disabled></select>
+                </label>
+              </div>
+            </div>
+
+            <div class="grid four">
+              <label>
+                Pages Artisan
+                <input id="artisanMaxPages" type="number" min="1" max="20" value="3" />
+              </label>
+              <label>
+                Fiches detail
+                <input id="artisanDetailLimit" type="number" min="0" max="500" value="10" />
+              </label>
+              <label>
+                Telephones max
+                <input id="artisanPhoneLimit" type="number" min="0" max="500" value="10" />
+              </label>
+              <label class="inline-check">
+                <input id="artisanAutoPhone" type="checkbox" checked />
+                Recuperer telephones
+              </label>
+            </div>
+          </section>
 
           <details class="advanced-filters">
             <summary>Filtres avances</summary>
@@ -210,6 +261,17 @@
             </div>
             <form id="lead-form" class="lead-form">
               <input id="leadKey" type="hidden" />
+              <input id="leadSourceId" type="hidden" />
+              <input id="leadWebsiteStatus" type="hidden" />
+              <input id="leadWebsiteStatusDetail" type="hidden" />
+              <input id="leadConfidence" type="hidden" />
+              <input id="leadValidationSource" type="hidden" />
+              <input id="leadInpiValidationStatus" type="hidden" />
+              <input id="leadInpiDomains" type="hidden" />
+              <input id="leadSources" type="hidden" />
+              <input id="leadHref" type="hidden" />
+              <input id="leadPhoneSource" type="hidden" />
+              <input id="leadCreationDate" type="hidden" />
 
               <div class="grid two">
                 <label>
@@ -232,6 +294,17 @@
                 <label>
                   SIREN
                   <input id="leadSiren" type="text" />
+                </label>
+                <label>
+                  SIRET
+                  <input id="leadSiret" type="text" />
+                </label>
+              </div>
+
+              <div class="grid two">
+                <label>
+                  NAF / APE
+                  <input id="leadNafCode" type="text" />
                 </label>
                 <label>
                   Relance
@@ -258,6 +331,33 @@
                 <label>
                   Ville
                   <input id="leadCity" type="text" />
+                </label>
+              </div>
+
+              <div class="grid two">
+                <label>
+                  Code postal
+                  <input id="leadPostalCode" type="text" />
+                </label>
+                <label>
+                  Statut telephone
+                  <input id="leadPhoneStatus" type="text" />
+                </label>
+              </div>
+
+              <label>
+                Adresse
+                <input id="leadAddress" type="text" />
+              </label>
+
+              <div class="grid two">
+                <label>
+                  Activite
+                  <input id="leadActivityLabel" type="text" />
+                </label>
+                <label>
+                  Metiers
+                  <input id="leadMetiers" type="text" />
                 </label>
               </div>
 

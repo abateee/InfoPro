@@ -1,6 +1,13 @@
 'use strict';
 
-const { toList, toString, toCheckedOrEmpty, toCsv, boolAsFlag } = require('../src/utils/filters');
+const {
+  toList,
+  toString,
+  toCheckedOrEmpty,
+  toCsv,
+  boolAsFlag,
+  numberOrDefault
+} = require('../src/utils/filters');
 
 function assert(condition, message) {
   if (!condition) throw new Error(message || 'Assertion failed');
@@ -45,5 +52,11 @@ assertEqual(boolAsFlag('true'), '1');
 assertEqual(boolAsFlag(1), '1');
 assertEqual(boolAsFlag(false), '');
 assertEqual(boolAsFlag(''), '');
+
+// numberOrDefault
+assertEqual(numberOrDefault(0, 10), 0);
+assertEqual(numberOrDefault('0', 10), 0);
+assertEqual(numberOrDefault('', 10), 10);
+assertEqual(numberOrDefault(undefined, 10), 10);
 
 console.log('filters.test.js: all passed');

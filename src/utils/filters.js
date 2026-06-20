@@ -35,10 +35,19 @@ function boolAsFlag(value) {
   return '';
 }
 
+function numberOrDefault(value, fallback) {
+  if (value === undefined || value === null || value === '') {
+    return Number(fallback);
+  }
+
+  return Number(value);
+}
+
 module.exports = {
   toList,
   toString,
   toCheckedOrEmpty,
   toCsv,
-  boolAsFlag
+  boolAsFlag,
+  numberOrDefault
 };

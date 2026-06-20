@@ -24,11 +24,16 @@ function formatLeadBlock(lead) {
     `SIREN: ${lead.siren || ''}`,
     `SIRET: ${lead.siret || ''}`,
     `NAF: ${lead.nafCode || ''}`,
+    `Date creation: ${lead.creationDate || ''}`,
+    `Activite: ${lead.activityLabel || ''}`,
+    `Metiers: ${Array.isArray(lead.metiers) ? lead.metiers.join(', ') : ''}`,
     `Ville: ${lead.city || ''}`,
     `Departement: ${lead.department || ''}`,
     `Code postal: ${lead.postalCode || ''}`,
     `Adresse: ${lead.address || ''}`,
     `Telephone: ${lead.phone || ''}`,
+    `Statut telephone: ${lead.phoneStatus || ''}`,
+    `Source telephone: ${lead.phoneSource || ''}`,
     `Email: ${lead.email || ''}`,
     `Site web: ${lead.website || ''}`,
     `Statut site: ${lead.websiteStatus || ''}`,
@@ -96,11 +101,19 @@ class LeadStore {
       siren: item.siren || (existing && existing.siren) || '',
       siret: item.siret || (existing && existing.siret) || '',
       nafCode: item.nafCode || (existing && existing.nafCode) || '',
+      sourceId: item.sourceId || (existing && existing.sourceId) || '',
+      creationDate: item.creationDate || (existing && existing.creationDate) || '',
+      activityLabel: item.activityLabel || (existing && existing.activityLabel) || '',
+      metiers: Array.isArray(item.metiers)
+        ? item.metiers.slice()
+        : ((existing && existing.metiers) || []),
       city: item.city || (existing && existing.city) || '',
       department: item.department || (existing && existing.department) || '',
       postalCode: item.postalCode || (existing && existing.postalCode) || '',
       address: item.address || (existing && existing.address) || '',
       phone: item.phone || (existing && existing.phone) || '',
+      phoneStatus: item.phoneStatus || (existing && existing.phoneStatus) || '',
+      phoneSource: item.phoneSource || (existing && existing.phoneSource) || '',
       email: item.email || (existing && existing.email) || '',
       website: item.website || (existing && existing.website) || '',
       websiteStatus: item.websiteStatus || (existing && existing.websiteStatus) || 'unknown',
@@ -115,6 +128,9 @@ class LeadStore {
       sources: Array.isArray(item.sources) && item.sources.length > 0
         ? item.sources.slice()
         : ((existing && existing.sources) || []),
+      providerData: item.providerData && typeof item.providerData === 'object'
+        ? { ...item.providerData }
+        : ((existing && existing.providerData) || {}),
       status: existing && existing.status ? existing.status : 'new',
       notes: existing && existing.notes ? existing.notes : '',
       followUpAt: existing && existing.followUpAt ? existing.followUpAt : '',
@@ -147,7 +163,7 @@ class LeadStore {
       const existing = leadKey ? index.get(leadKey) : null;
       const shouldPersist =
         item.websiteStatus === 'no_website' &&
-        item.shouldPersistNoWebsite !== false;
+        item.shouldPersistNoWebsite === true;
 
       if (!leadKey || !shouldPersist) {
         return existing
@@ -218,11 +234,19 @@ class LeadStore {
       siren: input.siren || (existing && existing.siren) || '',
       siret: input.siret || (existing && existing.siret) || '',
       nafCode: input.nafCode || (existing && existing.nafCode) || '',
+      sourceId: input.sourceId || (existing && existing.sourceId) || '',
+      creationDate: input.creationDate || (existing && existing.creationDate) || '',
+      activityLabel: input.activityLabel || (existing && existing.activityLabel) || '',
+      metiers: Array.isArray(input.metiers)
+        ? input.metiers.slice()
+        : ((existing && existing.metiers) || []),
       city: input.city || (existing && existing.city) || '',
       department: input.department || (existing && existing.department) || '',
       postalCode: input.postalCode || (existing && existing.postalCode) || '',
       address: input.address || (existing && existing.address) || '',
       phone: input.phone || (existing && existing.phone) || '',
+      phoneStatus: input.phoneStatus || (existing && existing.phoneStatus) || '',
+      phoneSource: input.phoneSource || (existing && existing.phoneSource) || '',
       email: input.email || (existing && existing.email) || '',
       website: input.website || (existing && existing.website) || '',
       websiteStatus: input.websiteStatus || (existing && existing.websiteStatus) || 'unknown',
@@ -237,6 +261,9 @@ class LeadStore {
       sources: Array.isArray(input.sources)
         ? input.sources.slice()
         : ((existing && existing.sources) || []),
+      providerData: input.providerData && typeof input.providerData === 'object'
+        ? { ...input.providerData }
+        : ((existing && existing.providerData) || {}),
       status: input.status || (existing && existing.status) || 'new',
       notes: input.notes != null ? String(input.notes) : ((existing && existing.notes) || ''),
       followUpAt: input.followUpAt != null ? String(input.followUpAt) : ((existing && existing.followUpAt) || ''),

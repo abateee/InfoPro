@@ -28,6 +28,7 @@ try {
       websiteStatusDetail: 'no_website_inpi_checked',
       validationSource: 'inpi',
       inpiValidationStatus: 'no_domain_found',
+      shouldPersistNoWebsite: true,
       sources: ['infonet']
     }
   ]);
@@ -46,6 +47,7 @@ try {
       department: '75',
       postalCode: '75001',
       websiteStatus: 'no_website',
+      shouldPersistNoWebsite: true,
       sources: ['infonet']
     }
   ]);
@@ -70,6 +72,18 @@ try {
   ]);
 
   assert(skipped.addedCount === 0, 'non validated no_website should not be persisted');
+
+  const unverified = store.upsertSearchResults([
+    {
+      company: 'SANS SITE NON VERIFIE',
+      siren: '123123123',
+      siret: '12312312300012',
+      websiteStatus: 'no_website',
+      sources: ['artisan']
+    }
+  ]);
+
+  assert(unverified.addedCount === 0, 'unverified no_website should not be persisted by default');
 
   const updated = store.upsertLead({
     leadKey: first.items[0].leadKey,

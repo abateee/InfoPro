@@ -3,6 +3,8 @@
 const MAX_LIST_LENGTH = 50;
 const MAX_QUERY_LENGTH = 200;
 const MAX_STRING_FIELD_LENGTH = 500;
+const MAX_PAGE_SIZE = 500;
+const MAX_ARTISAN_ENRICH_LIMIT = 500;
 
 const LIST_KEYS = [
   'nafCodes',
@@ -14,6 +16,10 @@ const LIST_KEYS = [
   'legalForms',
   'statuses',
   'sectorCodes',
+  'artisanMetierIds',
+  'artisanActivityIds',
+  'artisanCityIds',
+  'artisanDepartments',
   'providers'
 ];
 
@@ -53,13 +59,23 @@ function validateFilters(filters) {
   }
 
   const pageSize = Number(filters.pageSize);
-  if (Number.isFinite(pageSize) && (pageSize < 1 || pageSize > 100)) {
-    return { valid: false, error: 'pageSize must be between 1 and 100.' };
+  if (Number.isFinite(pageSize) && (pageSize < 1 || pageSize > MAX_PAGE_SIZE)) {
+    return { valid: false, error: `pageSize must be between 1 and ${MAX_PAGE_SIZE}.` };
   }
 
   const maxPages = Number(filters.maxPages);
   if (Number.isFinite(maxPages) && (maxPages < 1 || maxPages > 20)) {
     return { valid: false, error: 'maxPages must be between 1 and 20.' };
+  }
+
+  const artisanDetailLimit = Number(filters.artisanDetailLimit);
+  if (Number.isFinite(artisanDetailLimit) && (artisanDetailLimit < 0 || artisanDetailLimit > MAX_ARTISAN_ENRICH_LIMIT)) {
+    return { valid: false, error: `artisanDetailLimit must be between 0 and ${MAX_ARTISAN_ENRICH_LIMIT}.` };
+  }
+
+  const artisanPhoneLimit = Number(filters.artisanPhoneLimit);
+  if (Number.isFinite(artisanPhoneLimit) && (artisanPhoneLimit < 0 || artisanPhoneLimit > MAX_ARTISAN_ENRICH_LIMIT)) {
+    return { valid: false, error: `artisanPhoneLimit must be between 0 and ${MAX_ARTISAN_ENRICH_LIMIT}.` };
   }
 
   return { valid: true };

@@ -52,8 +52,20 @@ class InpiValidator {
 
     if (!this.isConfigured) {
       warnings.push('[inpi] Validation ignoree: identifiants INPI absents.');
+      const unverifiedItems = (items || []).map((item) => {
+        if (normalizeWebsiteStatus(item.websiteStatus) !== 'no_website') {
+          return item;
+        }
+
+        return {
+          ...item,
+          websiteStatusDetail: item.websiteStatusDetail || 'no_website_unverified',
+          inpiValidationStatus: 'not_configured',
+          shouldPersistNoWebsite: false
+        };
+      });
       return {
-        items: this._filterByRequestedStatus(items || [], requestedStatus),
+        items: this._filterByRequestedStatus(unverifiedItems, requestedStatus),
         warnings,
         meta: {
           provider: 'inpi',
@@ -61,7 +73,7 @@ class InpiValidator {
           checkedCount: 0,
           reclassifiedCount: 0,
           confirmedNoDomainCount: 0,
-          manualReviewCount: 0
+          manualReviewCount: candidates.length
         }
       };
     }

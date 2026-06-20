@@ -1,4 +1,8 @@
 function toList(value) {
+  if (Array.isArray(value)) {
+    return value.map((v) => String(v || '').trim()).filter(Boolean);
+  }
+
   return String(value || '')
     .split(',')
     .map((v) => v.trim())
@@ -6,7 +10,7 @@ function toList(value) {
 }
 
 function escapeHtml(value) {
-  return String(value || '')
+  return String(value == null ? '' : value)
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
@@ -15,7 +19,60 @@ function escapeHtml(value) {
 }
 
 function boolFromCheckbox(id) {
-  return document.getElementById(id).checked;
+  const el = document.getElementById(id);
+  return !!(el && el.checked);
+}
+
+function selectedValues(id) {
+  const el = document.getElementById(id);
+  if (!el) return [];
+  return Array.from(el.selectedOptions || [])
+    .map((option) => option.value)
+    .filter(Boolean);
+}
+
+function setSelectedValues(id, values) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const selected = new Set(toList(values));
+  Array.from(el.options).forEach((option) => {
+    option.selected = selected.has(option.value);
+  });
+}
+
+function setSelectOptions(id, options, placeholder) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const selected = selectedValues(id);
+  el.innerHTML = '';
+  if (placeholder) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = placeholder;
+    el.appendChild(opt);
+  }
+  (options || []).forEach((entry) => {
+    const opt = document.createElement('option');
+    opt.value = entry.id || entry.code || entry.value || '';
+    opt.textContent = entry.label || entry.name || opt.value;
+    el.appendChild(opt);
+  });
+  setSelectedValues(id, selected);
+}
+
+function setProviders(providers) {
+  const selected = new Set(toList(providers));
+  document.getElementById('providerInfonet').checked = selected.size === 0 || selected.has('infonet');
+  document.getElementById('providerAnnuaire').checked = selected.has('annuaire');
+  document.getElementById('providerArtisan').checked = selected.has('artisan');
+}
+
+function selectedProviders() {
+  const providers = [];
+  if (boolFromCheckbox('providerInfonet')) providers.push('infonet');
+  if (boolFromCheckbox('providerAnnuaire')) providers.push('annuaire');
+  if (boolFromCheckbox('providerArtisan')) providers.push('artisan');
+  return providers;
 }
 
 function activeFiltersFromDecodedQuery(decodedQuery) {
@@ -79,7 +136,11 @@ function buildCsv(items) {
     'company',
     'siren',
     'siret',
+    'sourceId',
     'nafCode',
+    'creationDate',
+    'activityLabel',
+    'metiers',
     'city',
     'department',
     'postalCode',
@@ -87,6 +148,8 @@ function buildCsv(items) {
     'websiteStatusDetail',
     'website',
     'phone',
+    'phoneStatus',
+    'phoneSource',
     'email',
     'confidence',
     'validationSource',
@@ -104,7 +167,11 @@ function buildCsv(items) {
       item.company || '',
       item.siren || '',
       item.siret || '',
+      item.sourceId || '',
       item.nafCode || '',
+      item.creationDate || '',
+      item.activityLabel || '',
+      Array.isArray(item.metiers) ? item.metiers.join('|') : '',
       item.city || '',
       item.department || '',
       item.postalCode || '',
@@ -112,6 +179,8 @@ function buildCsv(items) {
       item.websiteStatusDetail || '',
       item.website || '',
       item.phone || '',
+      item.phoneStatus || '',
+      item.phoneSource || '',
       item.email || '',
       item.confidence || '',
       item.validationSource || '',
@@ -136,7 +205,11 @@ function buildTxt(items) {
       `Entreprise: ${item.company || ''}`,
       `SIREN: ${item.siren || ''}`,
       `SIRET: ${item.siret || ''}`,
+      `Source ID: ${item.sourceId || ''}`,
       `NAF: ${item.nafCode || ''}`,
+      `Date creation: ${item.creationDate || ''}`,
+      `Activite: ${item.activityLabel || ''}`,
+      `Metiers: ${Array.isArray(item.metiers) ? item.metiers.join(', ') : ''}`,
       `Ville: ${item.city || ''}`,
       `Departement: ${item.department || ''}`,
       `Code postal: ${item.postalCode || ''}`,
@@ -144,6 +217,8 @@ function buildTxt(items) {
       `Detail site: ${item.websiteStatusDetail || ''}`,
       `Site web: ${item.website || ''}`,
       `Telephone: ${item.phone || ''}`,
+      `Statut telephone: ${item.phoneStatus || ''}`,
+      `Source telephone: ${item.phoneSource || ''}`,
       `Email: ${item.email || ''}`,
       `Confiance: ${item.confidence || ''}`,
       `Source validation: ${item.validationSource || ''}`,
@@ -196,10 +271,15 @@ function renderRows(items) {
       const canDownloadDocs = !!item.href && (item.sources || []).includes('infonet');
       const canOpenLead = !!item.leadKey || (item.websiteStatus === 'no_website' && item.shouldPersistNoWebsite !== false);
       const actions = [];
+      const metiers = Array.isArray(item.metiers) ? item.metiers.join(', ') : '';
       const validation = [
         item.websiteStatusDetail || '',
         item.inpiValidationStatus || ''
       ].filter(Boolean).join(' | ');
+
+      if (item.href) {
+        actions.push(`<a class="button-link" href="${escapeHtml(item.href)}" target="_blank" rel="noreferrer">Ouvrir source</a>`);
+      }
 
       if (canDownloadDocs) {
         actions.push(`<button type="button" class="btn-dl-docs" data-idx="${idx}">Telecharger fichiers</button>`);
@@ -220,11 +300,16 @@ function renderRows(items) {
         <tr>
           <td>${link}</td>
           <td>${escapeHtml(item.siren || '')}</td>
+          <td>${escapeHtml(item.siret || '')}</td>
           <td>${escapeHtml(item.city || '')}</td>
+          <td>${escapeHtml(item.postalCode || '')}</td>
           <td>${escapeHtml(item.nafCode || '')}</td>
+          <td>${escapeHtml(item.creationDate || '') || '-'}</td>
+          <td>${escapeHtml(metiers || item.activityLabel || '') || '-'}</td>
           <td>${escapeHtml(item.websiteStatus || '')}</td>
           <td>${website}</td>
           <td>${escapeHtml(item.phone || '') || '-'}</td>
+          <td>${escapeHtml(item.phoneStatus || '') || '-'}</td>
           <td>${escapeHtml(item.email || '') || '-'}</td>
           <td>${escapeHtml(item.confidence || '')}</td>
           <td>${escapeHtml(validation) || '-'}</td>
@@ -242,11 +327,16 @@ function renderRows(items) {
         <tr>
           <th>Entreprise</th>
           <th>SIREN</th>
+          <th>SIRET</th>
           <th>Ville</th>
+          <th>CP</th>
           <th>NAF</th>
+          <th>Creation</th>
+          <th>Metier / activite</th>
           <th>Site</th>
           <th>URL site</th>
           <th>Telephone</th>
+          <th>Statut tel.</th>
           <th>Email</th>
           <th>Confiance</th>
           <th>Validation</th>
@@ -285,6 +375,17 @@ function renderMeta(data) {
         const activeFilters = activeFiltersFromDecodedQuery(providerResult.decodedQuery);
         lines.push(`<p><strong>${escapeHtml(providerResult.provider)} query:</strong> <code>${escapeHtml(providerResult.decodedQuery)}</code></p>`);
         lines.push(`<p><strong>${escapeHtml(providerResult.provider)} filtres:</strong> <code>${escapeHtml(activeFilters.join(' | ') || '(aucun)')}</code></p>`);
+      }
+
+      if (providerResult.provider === 'artisan') {
+        lines.push(
+          `<p><strong>Artisan:</strong> ${escapeHtml(providerResult.pagesRead || 0)} page(s), ${escapeHtml(providerResult.listingItemCount || 0)} fiche(s) liste, ${escapeHtml(providerResult.detailCount || 0)} detail(s), ${escapeHtml(providerResult.phoneFound || 0)}/${escapeHtml(providerResult.phoneAttempts || 0)} telephone(s)</p>`
+        );
+        if (providerResult.fallbackUsed) {
+          lines.push(
+            `<p><strong>Filtrage local Artisan:</strong> ${escapeHtml(providerResult.localMatchedCount || 0)} correspondance(s) exacte(s) sur ${escapeHtml(providerResult.fallbackListingTotal || 0)} fiche(s) de la zone.</p>`
+          );
+        }
       }
     });
   }
@@ -367,19 +468,29 @@ function fromDateTimeLocal(value) {
 function serializeLeadFromItem(item) {
   return {
     leadKey: item.leadKey || '',
+    sourceId: item.sourceId || '',
     company: item.company || '',
     siren: item.siren || '',
     siret: item.siret || '',
     nafCode: item.nafCode || '',
+    creationDate: item.creationDate || '',
+    activityLabel: item.activityLabel || '',
+    metiers: Array.isArray(item.metiers) ? item.metiers : [],
     city: item.city || '',
     department: item.department || '',
     postalCode: item.postalCode || '',
     address: item.address || '',
     phone: item.phone || '',
+    phoneStatus: item.phoneStatus || '',
+    phoneSource: item.phoneSource || '',
     email: item.email || '',
     website: item.website || '',
     websiteStatus: item.websiteStatus || 'unknown',
+    websiteStatusDetail: item.websiteStatusDetail || '',
     confidence: item.confidence || 'low',
+    validationSource: item.validationSource || '',
+    inpiValidationStatus: item.inpiValidationStatus || '',
+    inpiDomains: Array.isArray(item.inpiDomains) ? item.inpiDomains : [],
     href: item.href || '',
     sources: Array.isArray(item.sources) ? item.sources : [],
     status: item.leadStatus || 'new',
@@ -395,14 +506,32 @@ function applyLeadToForm(lead) {
 
   activeLeadKey = lead.leadKey || '';
   document.getElementById('leadKey').value = lead.leadKey || '';
+  document.getElementById('leadSourceId').value = lead.sourceId || '';
+  document.getElementById('leadWebsiteStatus').value = lead.websiteStatus || 'unknown';
+  document.getElementById('leadWebsiteStatusDetail').value = lead.websiteStatusDetail || '';
+  document.getElementById('leadConfidence').value = lead.confidence || 'low';
+  document.getElementById('leadValidationSource').value = lead.validationSource || '';
+  document.getElementById('leadInpiValidationStatus').value = lead.inpiValidationStatus || '';
+  document.getElementById('leadInpiDomains').value = Array.isArray(lead.inpiDomains) ? lead.inpiDomains.join(', ') : (lead.inpiDomains || '');
+  document.getElementById('leadSources').value = Array.isArray(lead.sources) ? lead.sources.join(', ') : (lead.sources || '');
+  document.getElementById('leadHref').value = lead.href || '';
+  document.getElementById('leadPhoneSource').value = lead.phoneSource || '';
+  document.getElementById('leadCreationDate').value = lead.creationDate || '';
   document.getElementById('leadCompany').value = lead.company || '';
   document.getElementById('leadStatus').value = lead.status || 'new';
   document.getElementById('leadSiren').value = lead.siren || '';
+  document.getElementById('leadSiret').value = lead.siret || '';
+  document.getElementById('leadNafCode').value = lead.nafCode || '';
   document.getElementById('leadFollowUpAt').value = toDateTimeLocal(lead.followUpAt);
   document.getElementById('leadPhone').value = lead.phone || '';
+  document.getElementById('leadPhoneStatus').value = lead.phoneStatus || '';
   document.getElementById('leadEmail').value = lead.email || '';
   document.getElementById('leadWebsite').value = lead.website || '';
   document.getElementById('leadCity').value = lead.city || '';
+  document.getElementById('leadPostalCode').value = lead.postalCode || '';
+  document.getElementById('leadAddress').value = lead.address || '';
+  document.getElementById('leadActivityLabel').value = lead.activityLabel || '';
+  document.getElementById('leadMetiers').value = Array.isArray(lead.metiers) ? lead.metiers.join(', ') : (lead.metiers || '');
   document.getElementById('leadNotes').value = lead.notes || '';
 }
 
@@ -422,7 +551,9 @@ function renderLeadList(leads) {
         <h3>${escapeHtml(lead.company || '')}</h3>
         <p><strong>Statut:</strong> ${escapeHtml(leadStatusLabel(lead.status))}</p>
         <p><strong>Ville:</strong> ${escapeHtml(lead.city || '')}</p>
+        <p><strong>Site:</strong> ${escapeHtml(lead.websiteStatus || '') || '-'}</p>
         <p><strong>Telephone:</strong> ${escapeHtml(lead.phone || '') || '-'}</p>
+        <p><strong>Statut tel.:</strong> ${escapeHtml(lead.phoneStatus || '') || '-'}</p>
         <p><strong>Email:</strong> ${escapeHtml(lead.email || '') || '-'}</p>
         <p><strong>Relance:</strong> ${escapeHtml(lead.followUpAt || '') || '-'}</p>
         <div class="actions">
@@ -509,12 +640,30 @@ async function saveLead(event) {
 
   const payload = {
     leadKey: document.getElementById('leadKey').value,
+    sourceId: document.getElementById('leadSourceId').value,
+    websiteStatus: document.getElementById('leadWebsiteStatus').value,
+    websiteStatusDetail: document.getElementById('leadWebsiteStatusDetail').value,
+    confidence: document.getElementById('leadConfidence').value,
+    validationSource: document.getElementById('leadValidationSource').value,
+    inpiValidationStatus: document.getElementById('leadInpiValidationStatus').value,
+    inpiDomains: toList(document.getElementById('leadInpiDomains').value),
+    sources: toList(document.getElementById('leadSources').value),
+    href: document.getElementById('leadHref').value,
+    phoneSource: document.getElementById('leadPhoneSource').value,
+    creationDate: document.getElementById('leadCreationDate').value,
     company: document.getElementById('leadCompany').value,
     siren: document.getElementById('leadSiren').value,
+    siret: document.getElementById('leadSiret').value,
+    nafCode: document.getElementById('leadNafCode').value,
     phone: document.getElementById('leadPhone').value,
+    phoneStatus: document.getElementById('leadPhoneStatus').value,
     email: document.getElementById('leadEmail').value,
     website: document.getElementById('leadWebsite').value,
     city: document.getElementById('leadCity').value,
+    postalCode: document.getElementById('leadPostalCode').value,
+    address: document.getElementById('leadAddress').value,
+    activityLabel: document.getElementById('leadActivityLabel').value,
+    metiers: toList(document.getElementById('leadMetiers').value),
     status: document.getElementById('leadStatus').value,
     followUpAt: fromDateTimeLocal(document.getElementById('leadFollowUpAt').value),
     notes: document.getElementById('leadNotes').value
@@ -548,17 +697,34 @@ function getEl(id) {
 }
 
 function buildSearchPayload() {
+  const providers = selectedProviders();
+  const useArtisan = providers.includes('artisan');
+  const artisanDepartment = getEl('artisanDepartment');
+  const genericDepartments = toList(getEl('departments'));
+  const maxPages = useArtisan && getEl('artisanMaxPages')
+    ? Number(getEl('artisanMaxPages') || 3)
+    : Number(getEl('maxPages') || 3);
+
   return {
     query: getEl('query'),
-    providers: toList(getEl('providers')),
+    providers,
     apeCodes: toList(getEl('apeCodes')),
     tags: toList(getEl('tags')),
     cities: toList(getEl('cities')),
     postalCodes: toList(getEl('postalCodes')),
-    departments: toList(getEl('departments')),
+    departments: useArtisan && artisanDepartment
+      ? Array.from(new Set([...genericDepartments, artisanDepartment]))
+      : genericDepartments,
     legalForms: toList(getEl('legalForms')),
     statuses: toList(getEl('statuses')),
     sectorCodes: toList(getEl('sectorCodes')),
+    artisanMetierIds: useArtisan ? selectedValues('artisanMetierIds') : [],
+    artisanActivityIds: useArtisan ? selectedValues('artisanActivityIds') : [],
+    artisanCityIds: useArtisan ? selectedValues('artisanCityIds') : [],
+    artisanDepartments: useArtisan && artisanDepartment ? [artisanDepartment] : [],
+    artisanAutoPhone: useArtisan && boolFromCheckbox('artisanAutoPhone'),
+    artisanDetailLimit: useArtisan ? Number(getEl('artisanDetailLimit') || 10) : 0,
+    artisanPhoneLimit: useArtisan ? Number(getEl('artisanPhoneLimit') || 10) : 0,
     staff: getEl('staff'),
     minSales: getEl('minSales'),
     maxSales: getEl('maxSales'),
@@ -572,7 +738,7 @@ function buildSearchPayload() {
     sortOrder: getEl('sortOrder') || 'desc',
     page: Number(getEl('page') || 1),
     pageSize: Number(getEl('pageSize') || 25),
-    maxPages: Number(getEl('maxPages') || 3),
+    maxPages,
     isActive: boolFromCheckbox('isActive'),
     isProfitable: boolFromCheckbox('isProfitable'),
     hasEmail: boolFromCheckbox('hasEmail'),
@@ -636,7 +802,7 @@ function applyPayloadToForm(payload) {
     else el.value = value == null ? '' : value;
   };
   set('query', payload.query);
-  set('providers', Array.isArray(payload.providers) ? payload.providers.join(', ') : payload.providers);
+  setProviders(payload.providers);
   set('apeCodes', Array.isArray(payload.apeCodes) ? payload.apeCodes.join(', ') : payload.apeCodes);
   set('tags', Array.isArray(payload.tags) ? payload.tags.join(', ') : payload.tags);
   set('cities', Array.isArray(payload.cities) ? payload.cities.join(', ') : payload.cities);
@@ -653,6 +819,13 @@ function applyPayloadToForm(payload) {
   set('fromCreationDate', payload.fromCreationDate);
   set('toCreationDate', payload.toCreationDate);
   set('riskNonPaymentsNormalized', payload.riskNonPaymentsNormalized);
+  setSelectedValues('artisanMetierIds', payload.artisanMetierIds);
+  setSelectedValues('artisanActivityIds', payload.artisanActivityIds);
+  set('artisanDepartment', Array.isArray(payload.artisanDepartments) ? payload.artisanDepartments[0] : payload.artisanDepartment);
+  set('artisanMaxPages', payload.maxPages);
+  set('artisanDetailLimit', payload.artisanDetailLimit);
+  set('artisanPhoneLimit', payload.artisanPhoneLimit);
+  set('artisanAutoPhone', payload.artisanAutoPhone);
   set('websiteStatus', payload.websiteStatus);
   set('sortBy', payload.sortBy);
   set('sortOrder', payload.sortOrder);
@@ -666,6 +839,9 @@ function applyPayloadToForm(payload) {
   set('hasTwitter', payload.hasTwitter);
   set('includeContactEnrichment', payload.includeContactEnrichment);
   set('isRespectfulOfPaymentDelays', payload.isRespectfulOfPaymentDelays);
+  syncSourcePanels();
+  syncSortOptions();
+  loadArtisanCities(payload.artisanCityIds);
 }
 
 function renderPresetsSelect() {
@@ -702,6 +878,124 @@ function renderHistory() {
   });
 }
 
+const INFONET_SORT_OPTIONS = [
+  { value: 'sales', label: "Chiffre d'affaires" },
+  { value: 'netIncome', label: 'Resultat net' },
+  { value: 'creationDate', label: 'Date creation' },
+  { value: 'name', label: 'Nom' },
+  { value: 'supplierPaymentDelay', label: 'Delai paiement fournisseur' }
+];
+
+const ARTISAN_SORT_OPTIONS = [
+  { value: 'name', label: 'Nom' },
+  { value: 'city', label: 'Ville' },
+  { value: 'department', label: 'Departement' },
+  { value: 'websiteStatus', label: 'Statut site' },
+  { value: 'phoneStatus', label: 'Telephone trouve' },
+  { value: 'creationDate', label: 'Date creation' }
+];
+
+function syncSourcePanels() {
+  const artisanPanel = document.getElementById('artisan-panel');
+  if (artisanPanel) {
+    artisanPanel.hidden = !boolFromCheckbox('providerArtisan');
+  }
+}
+
+function raiseNumberInput(id, minimum) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const current = Number(el.value || 0);
+  if (!Number.isFinite(current) || current < minimum) {
+    el.value = String(minimum);
+  }
+}
+
+function applyArtisanBulkDefaults() {
+  if (!boolFromCheckbox('providerArtisan')) return;
+  raiseNumberInput('artisanMaxPages', 20);
+  raiseNumberInput('pageSize', 250);
+  raiseNumberInput('artisanDetailLimit', 250);
+  raiseNumberInput('artisanPhoneLimit', 10);
+}
+
+function syncSortOptions() {
+  const sortSelect = document.getElementById('sortBy');
+  if (!sortSelect) return;
+  const providers = selectedProviders();
+  const current = sortSelect.value;
+  const useOnlyArtisan = providers.length === 1 && providers[0] === 'artisan';
+  const options = useOnlyArtisan
+    ? ARTISAN_SORT_OPTIONS
+    : Array.from(new Map([...INFONET_SORT_OPTIONS, ...ARTISAN_SORT_OPTIONS].map((option) => [option.value, option])).values());
+
+  sortSelect.innerHTML = '';
+  options.forEach((entry) => {
+    const option = document.createElement('option');
+    option.value = entry.value;
+    option.textContent = entry.label;
+    sortSelect.appendChild(option);
+  });
+
+  if (options.some((entry) => entry.value === current)) {
+    sortSelect.value = current;
+  } else {
+    sortSelect.value = useOnlyArtisan ? 'name' : 'sales';
+  }
+}
+
+async function loadArtisanOptions() {
+  const status = document.getElementById('artisan-options-status');
+  if (status) status.textContent = 'Chargement options...';
+
+  try {
+    const response = await fetch('/api/provider-options/artisan', { cache: 'no-store' });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'Artisan options error');
+    }
+
+    setSelectOptions('artisanMetierIds', data.metiers || []);
+    setSelectOptions('artisanActivityIds', data.activities || []);
+    setSelectOptions('artisanDepartment', data.departments || [], '-- Departement --');
+    if (status) {
+      status.textContent = `${(data.metiers || []).length} metier(s), ${(data.activities || []).length} activite(s).`;
+    }
+  } catch (error) {
+    if (status) status.textContent = `Options Artisan indisponibles: ${error.message}`;
+  }
+}
+
+async function loadArtisanCities(selectValues = []) {
+  const department = getEl('artisanDepartment');
+  const citySelect = document.getElementById('artisanCityIds');
+  const status = document.getElementById('artisan-options-status');
+
+  if (!citySelect) return;
+  citySelect.innerHTML = '';
+  citySelect.disabled = true;
+
+  if (!department) {
+    if (status) status.textContent = 'Choisis un departement pour charger les villes.';
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/provider-options/artisan/cities?department=${encodeURIComponent(department)}`, { cache: 'no-store' });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'Artisan cities error');
+    }
+
+    setSelectOptions('artisanCityIds', data.items || []);
+    setSelectedValues('artisanCityIds', selectValues);
+    citySelect.disabled = false;
+    if (status) status.textContent = `${(data.items || []).length} ville(s) chargee(s).`;
+  } catch (error) {
+    if (status) status.textContent = `Villes Artisan indisponibles: ${error.message}`;
+  }
+}
+
 let lastItems = [];
 setExportState(false);
 
@@ -723,9 +1017,28 @@ async function updateBackendStatus() {
 }
 
 updateBackendStatus();
+loadArtisanOptions();
+syncSourcePanels();
+syncSortOptions();
 renderPresetsSelect();
 renderHistory();
 loadLeads();
+
+['providerInfonet', 'providerAnnuaire', 'providerArtisan'].forEach((id) => {
+  const checkbox = document.getElementById(id);
+  if (checkbox) {
+    checkbox.addEventListener('change', () => {
+      applyArtisanBulkDefaults();
+      syncSourcePanels();
+      syncSortOptions();
+    });
+  }
+});
+
+const artisanDepartmentEl = document.getElementById('artisanDepartment');
+if (artisanDepartmentEl) {
+  artisanDepartmentEl.addEventListener('change', () => loadArtisanCities());
+}
 
 if (refreshLeadsBtn) {
   refreshLeadsBtn.addEventListener('click', () => loadLeads(activeLeadKey));
@@ -785,7 +1098,11 @@ if (exportXlsxBtn) {
         company: item.company || '',
         siren: item.siren || '',
         siret: item.siret || '',
+        sourceId: item.sourceId || '',
         nafCode: item.nafCode || '',
+        creationDate: item.creationDate || '',
+        activityLabel: item.activityLabel || '',
+        metiers: Array.isArray(item.metiers) ? item.metiers.join('|') : '',
         city: item.city || '',
         department: item.department || '',
         postalCode: item.postalCode || '',
@@ -793,6 +1110,8 @@ if (exportXlsxBtn) {
         websiteStatusDetail: item.websiteStatusDetail || '',
         website: item.website || '',
         phone: item.phone || '',
+        phoneStatus: item.phoneStatus || '',
+        phoneSource: item.phoneSource || '',
         email: item.email || '',
         confidence: item.confidence || '',
         validationSource: item.validationSource || '',
@@ -814,6 +1133,14 @@ form.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const payload = buildSearchPayload();
+  if (payload.providers.length === 0) {
+    statusEl.textContent = 'Erreur: selectionnez au moins une source.';
+    metaEl.innerHTML = '';
+    resultsEl.innerHTML = '';
+    lastItems = [];
+    setExportState(false);
+    return;
+  }
 
   statusEl.textContent = 'Recherche en cours (cela peut prendre 1 a 2 min en mode live)...';
   statusEl.classList.add('loading');
